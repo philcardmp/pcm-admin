@@ -16,6 +16,7 @@ export default function AdminProducts() {
   const [productId, setProductId] = useState("");
   const [productName, setProductName] = useState("");
   const [price, setPrice] = useState(null);
+  const [quantity, setQuantity] = useState(null);
   const [type, setType] = useState("CARD");
   const [filter, setFilter] = useState("");
   const [description, setDescription] = useState("");
@@ -30,6 +31,7 @@ export default function AdminProducts() {
   // Validation
   const [invalidProductName, setInvalidProductName] = useState(false);
   const [invalidPrice, setInvalidPrice] = useState(false);
+  const [invalidQuantity, setInvalidQuantity] = useState(false);
   const [invalidDescription, setInvalidDescription] = useState(false);
 
   const handleSubmit = (e) => {
@@ -39,6 +41,7 @@ export default function AdminProducts() {
         id: productId,
         productName: productName,
         price: price,
+        quantity: quantity,
         type: type,
         filter: filter,
         description: description,
@@ -87,6 +90,7 @@ export default function AdminProducts() {
       const requestBody = {
         productName: productName,
         price: price,
+        quantity: quantity,
         type: type,
         filter: filter,
         description: description,
@@ -135,6 +139,7 @@ export default function AdminProducts() {
 
     // Set to default
     setPrice(null);
+    setQuantity(null);
     setProductName("");
     setType("CARD");
     setFilter("ALL");
@@ -148,6 +153,7 @@ export default function AdminProducts() {
     // Set to edit product
     setProductName(product.data().productName);
     setPrice(product.data().price);
+    setQuantity(product.data().quantity);
     setType(product.data().type);
     setFilter(product.data().filter);
     setDescription(product.data().description);
@@ -190,6 +196,14 @@ export default function AdminProducts() {
       isValid = false;
     } else {
       setInvalidPrice(false);
+    }
+
+    // Check if quantity has value
+    if (quantity.match("^$|^.*@.*..*$") || isNaN(quantity) || quantity <= 0) {
+      setInvalidQuantity(true);
+      isValid = false;
+    } else {
+      setInvalidQuantity(false);
     }
 
     // Check if description has an input
@@ -238,7 +252,7 @@ export default function AdminProducts() {
         </Form.Group>
 
         {/* PRODUCT PRICE */}
-        <Form.Group controlId="formPrice" className="w-50">
+        <Form.Group controlId="formPrice" className="w-25">
           <Form.Control
             type="text"
             size="sm"
@@ -252,15 +266,32 @@ export default function AdminProducts() {
           </Form.Control.Feedback>
         </Form.Group>
 
+        {/* PRODUCT QUANTITY */}
+        <Form.Group controlId="formQuantity" className="w-25">
+          <Form.Control
+            type="text"
+            size="sm"
+            placeholder="Enter Product Quantity"
+            value={quantity ? quantity.toString() : ""}
+            onChange={(e) => setQuantity(e.target.value)}
+            isInvalid={invalidQuantity}
+          ></Form.Control>
+          <Form.Control.Feedback type="invalid">
+            Quantity must be a number
+          </Form.Control.Feedback>
+        </Form.Group>
+
         {/* TYPE */}
         <Form.Group controlId="formType" className="w-50">
           <Form.Select
             aria-label="Default select example"
             onChange={(e) => setType(e.target.value)}
           >
-            <option value="CARD">CARD</option>
-            <option value="REPACK">REPACK</option>
-            <option value="BOX">BOX</option>
+            <option value="SLAB">SLAB</option>
+            <option value="PATCH">PATCH</option>
+            <option value="AUTO">AUTO</option>
+            <option value="NUMBERED">NUMBERED</option>
+            <option value="INSERT">INSERT</option>
           </Form.Select>
         </Form.Group>
 
@@ -395,7 +426,8 @@ export default function AdminProducts() {
             <React.Fragment key={product.id}>
               <div className="col-md-4 my-4">
                 <div className="card text-center d-flex align-items-center justify-content-center py-2">
-                  <h6 className="pt-2 fw-bold">P
+                  <h6 className="pt-2 fw-bold">
+                    P
                     {`${product.data().status} ${parseInt(
                       product.data().price
                     ).toLocaleString()}`}
@@ -485,15 +517,27 @@ export default function AdminProducts() {
               <h4 className="text-danger text-center">CARD</h4>
               {renderProducts("CARD")}
             </div>
+            <div className="row justify-content-center pb-5 mb-5">
+              <h4 className="text-danger text-center">SLABS</h4>
+              {renderProducts("SLABS")}
+            </div>
             <div className="container">
               <div className="row justify-content-center pb-5 mb-5">
-                <h4 className="text-danger text-center">REPACK</h4>
-                {renderProducts("REPACK")}
+                <h4 className="text-danger text-center">PATCH</h4>
+                {renderProducts("PATCH")}
               </div>
             </div>
             <div className="row justify-content-center py-5 my-5">
-              <h4 className="text-danger text-center">BOX</h4>
-              {renderProducts("BOX")}
+              <h4 className="text-danger text-center">AUTO</h4>
+              {renderProducts("AUTO")}
+            </div>
+            <div className="row justify-content-center py-5 my-5">
+              <h4 className="text-danger text-center">NUMBERED</h4>
+              {renderProducts("NUMBERED")}
+            </div>
+            <div className="row justify-content-center py-5 my-5">
+              <h4 className="text-danger text-center">INSERTS</h4>
+              {renderProducts("INSERTS")}
             </div>
           </div>
         </div>
