@@ -13,14 +13,14 @@ import { db, storage } from "../firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
 
 export default function AdminProducts() {
-  const [productId, setProductId] = useState("");
   const [productName, setProductName] = useState("");
   const [price, setPrice] = useState(null);
   const [quantity, setQuantity] = useState(null);
-  const [type, setType] = useState("CARD");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [filter, setFilter] = useState("");
+  const [team, setTeam] = useState("");
   const [description, setDescription] = useState("");
-  // const [likes, setLikes] = useState(2);
   const [editId, setEditId] = useState(null);
   const filePickerRef = useRef(null);
   const [imageToPost, setImageToPost] = useState(null);
@@ -29,7 +29,7 @@ export default function AdminProducts() {
   );
 
   // Validation
-  const [invalidProductName, setInvalidProductName] = useState(false);
+  const [invalidName, setInvalidName] = useState(false);
   const [invalidPrice, setInvalidPrice] = useState(false);
   const [invalidQuantity, setInvalidQuantity] = useState(false);
   const [invalidDescription, setInvalidDescription] = useState(false);
@@ -38,15 +38,14 @@ export default function AdminProducts() {
     e.preventDefault();
     if (checkIfValid()) {
       const requestBody = {
-        id: productId,
         productName: productName,
         price: price,
         quantity: quantity,
-        type: type,
+        firstName: firstName,
+        lastName: lastName,
         filter: filter,
+        team: team,
         description: description,
-        status: "",
-        // likes: 2,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       };
 
@@ -91,11 +90,8 @@ export default function AdminProducts() {
         productName: productName,
         price: price,
         quantity: quantity,
-        type: type,
         filter: filter,
         description: description,
-        status: "",
-        // likes: likes,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       };
 
@@ -141,12 +137,13 @@ export default function AdminProducts() {
     setPrice(null);
     setQuantity(null);
     setProductName("");
-    setType("CARD");
-    setFilter("ALL");
+    setFirstName("");
+    setLastName("");
+    setFilter("");
+    setTeam("");
     setDescription("");
     setEditId(null);
     setImageToPost(null);
-    // setLikes(2);
   };
 
   const editProduct = (product) => {
@@ -154,11 +151,12 @@ export default function AdminProducts() {
     setProductName(product.data().productName);
     setPrice(product.data().price);
     setQuantity(product.data().quantity);
-    setType(product.data().type);
+    setFirstName(product.data().firstName);
+    setLastName(product.data().lastName);
     setFilter(product.data().filter);
+    setTeam(product.data().team);
     setDescription(product.data().description);
     setImageToPost(product.data().postImage);
-    // setLikes(product.data().likes);
     setEditId(product.id);
   };
 
@@ -170,12 +168,11 @@ export default function AdminProducts() {
     storage.ref("products").child(id).delete();
   };
 
-  const updateProduct = (product, status) => {
+  const updateProduct = (product) => {
     db.collection("products")
       .doc(product.id)
       .update({
         ...product.data,
-        status: status,
       });
   };
 
@@ -184,10 +181,10 @@ export default function AdminProducts() {
 
     // Check if productName is valid
     if (productName.match("^$|^.*@.*..*$")) {
-      setInvalidProductName(true);
+      setInvalidName(true);
       isValid = false;
     } else {
-      setInvalidProductName(false);
+      setInvalidName(false);
     }
 
     // Check if price has value
@@ -206,6 +203,22 @@ export default function AdminProducts() {
       setInvalidQuantity(false);
     }
 
+    // Check if firstName is valid
+    if (firstName.match("^$|^.*@.*..*$")) {
+      setInvalidName(true);
+      isValid = false;
+    } else {
+      setInvalidName(false);
+    }
+
+    // Check if lastName is valid
+    if (lastName.match("^$|^.*@.*..*$")) {
+      setInvalidName(true);
+      isValid = false;
+    } else {
+      setInvalidName(false);
+    }
+
     // Check if description has an input
     if (description.match("^$|^.*@.*..*$")) {
       setInvalidDescription(true);
@@ -219,14 +232,17 @@ export default function AdminProducts() {
 
   const addImageToPost = (e) => {
     const reader = new FileReader();
-
     if (e.target.files[0]) {
       reader.readAsDataURL(e.target.files[0]);
     }
-
     reader.onload = (readEvent) => {
       setImageToPost(readEvent.target.result);
     };
+  };
+
+  const handleFilter = (e) => {
+    setFilter(e.target.value);
+    setTeam(e.target.options[e.target.selectedIndex].text);
   };
 
   const removeImage = () => {
@@ -244,7 +260,7 @@ export default function AdminProducts() {
             placeholder="Enter Product Name"
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
-            isInvalid={invalidProductName}
+            isInvalid={invalidName}
           ></Form.Control>
           <Form.Control.Feedback type="invalid">
             Please input a product name
@@ -281,25 +297,42 @@ export default function AdminProducts() {
           </Form.Control.Feedback>
         </Form.Group>
 
-        {/* TYPE */}
-        <Form.Group controlId="formType" className="w-50">
-          <Form.Select
-            aria-label="Default select example"
-            onChange={(e) => setType(e.target.value)}
-          >
-            <option value="SLAB">SLAB</option>
-            <option value="PATCH">PATCH</option>
-            <option value="AUTO">AUTO</option>
-            <option value="NUMBERED">NUMBERED</option>
-            <option value="INSERT">INSERT</option>
-          </Form.Select>
+        {/* FIRSTNAME */}
+        <Form.Group controlId="formFirstName" className="w-25">
+          <Form.Control
+            type="text"
+            size="sm"
+            placeholder="Enter Player's First Name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            isInvalid={invalidName}
+          ></Form.Control>
+          <Form.Control.Feedback type="invalid">
+            Price must be a number
+          </Form.Control.Feedback>
+        </Form.Group>
+
+        {/* LASTNAME */}
+        <Form.Group controlId="formQuantity" className="w-25">
+          <Form.Control
+            type="text"
+            size="sm"
+            placeholder="Enter Player's Last Name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            isInvalid={invalidName}
+          ></Form.Control>
+          <Form.Control.Feedback type="invalid">
+            Quantity must be a number
+          </Form.Control.Feedback>
         </Form.Group>
 
         {/* FILTER */}
         <Form.Group controlId="formFilter" className="w-50">
           <Form.Select
             aria-label="Default select example"
-            onChange={(e) => setFilter(e.target.value)}
+            onChange={handleFilter}
+            value={filter}
           >
             <option value="ATL">Atlanta Hawks</option>
             <option value="BKN">Brooklyn Nets</option>
@@ -417,71 +450,66 @@ export default function AdminProducts() {
     );
   };
 
-  const renderProducts = (type) => {
+  const renderProducts = () => {
     return (
       <>
-        {productList?.docs
-          .filter((product) => product.data().type === type)
-          .map((product) => (
-            <React.Fragment key={product.id}>
-              <div className="col-md-4 my-4">
-                <div className="card text-center d-flex align-items-center justify-content-center py-2">
-                  <h6 className="pt-2 fw-bold">
-                    P
-                    {`${product.data().status} ${parseInt(
-                      product.data().price
-                    ).toLocaleString()}`}
+        {productList?.docs.map((product) => (
+          <React.Fragment key={product.id}>
+            <div className="col-md-4 my-4">
+              <div className="card text-center d-flex align-items-center justify-content-center py-2">
+                <h6 className="pt-2 fw-bold">
+                  P{`${parseInt(product.data().price).toLocaleString()}`}
+                </h6>
+                <Image
+                  src={product.data().postImage}
+                  alt={product.data().productName}
+                  width="320"
+                  height="400"
+                />
+                <h6 className="pt-2 fw-bold">{product.data().productName}</h6>
+                <h6 className="text-secondary">{product.data().filter}</h6>
+                <div className="d-flex justify-content-around">
+                  <h6
+                    onClick={() => deleteProduct(product.id)}
+                    role="button"
+                    className="text-danger me-3"
+                  >
+                    DELETE
+                    <FontAwesomeIcon icon={faTrash} height={20} color="red" />
                   </h6>
-                  <Image
-                    src={product.data().postImage}
-                    alt={product.data().productName}
-                    width="320"
-                    height="400"
-                  />
-                  <h6 className="pt-2 fw-bold">{product.data().productName}</h6>
-                  <h6 className="text-secondary">{product.data().filter}</h6>
-                  <div className="d-flex justify-content-around">
-                    <h6
-                      onClick={() => deleteProduct(product.id)}
-                      role="button"
-                      className="text-danger me-3"
-                    >
-                      DELETE
-                      <FontAwesomeIcon icon={faTrash} height={20} color="red" />
-                    </h6>
-                    <h6
-                      onClick={() => editProduct(product)}
-                      role="button"
-                      className="text-primary"
-                    >
-                      EDIT
-                      <FontAwesomeIcon icon={faEdit} height={20} color="blue" />
-                    </h6>
-                  </div>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <button
-                      onClick={() => updateProduct(product, "sale")}
-                      role="button"
-                    >
-                      sale
-                    </button>
-                    <button
-                      onClick={() => updateProduct(product, "reserved")}
-                      role="button"
-                    >
-                      reserved
-                    </button>
-                    <button
-                      onClick={() => updateProduct(product, "sold")}
-                      role="button"
-                    >
-                      sold
-                    </button>
-                  </div>
+                  <h6
+                    onClick={() => editProduct(product)}
+                    role="button"
+                    className="text-primary"
+                  >
+                    EDIT
+                    <FontAwesomeIcon icon={faEdit} height={20} color="blue" />
+                  </h6>
+                </div>
+                <div className="d-flex justify-content-between align-items-center">
+                  <button
+                    onClick={() => updateProduct(product, "sale")}
+                    role="button"
+                  >
+                    sale
+                  </button>
+                  <button
+                    onClick={() => updateProduct(product, "reserved")}
+                    role="button"
+                  >
+                    reserved
+                  </button>
+                  <button
+                    onClick={() => updateProduct(product, "sold")}
+                    role="button"
+                  >
+                    sold
+                  </button>
                 </div>
               </div>
-            </React.Fragment>
-          ))}
+            </div>
+          </React.Fragment>
+        ))}
       </>
     );
   };
@@ -514,30 +542,8 @@ export default function AdminProducts() {
           <hr />
           <div className="container">
             <div className="row justify-content-center pb-5 mb-5">
-              <h4 className="text-danger text-center">CARD</h4>
-              {renderProducts("CARD")}
-            </div>
-            <div className="row justify-content-center pb-5 mb-5">
-              <h4 className="text-danger text-center">SLABS</h4>
-              {renderProducts("SLABS")}
-            </div>
-            <div className="container">
-              <div className="row justify-content-center pb-5 mb-5">
-                <h4 className="text-danger text-center">PATCH</h4>
-                {renderProducts("PATCH")}
-              </div>
-            </div>
-            <div className="row justify-content-center py-5 my-5">
-              <h4 className="text-danger text-center">AUTO</h4>
-              {renderProducts("AUTO")}
-            </div>
-            <div className="row justify-content-center py-5 my-5">
-              <h4 className="text-danger text-center">NUMBERED</h4>
-              {renderProducts("NUMBERED")}
-            </div>
-            <div className="row justify-content-center py-5 my-5">
-              <h4 className="text-danger text-center">INSERTS</h4>
-              {renderProducts("INSERTS")}
+              <h4 className="text-danger text-center">CARDS</h4>
+              {renderProducts()}
             </div>
           </div>
         </div>
